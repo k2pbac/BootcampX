@@ -153,9 +153,26 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function (property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  const newProperty = { owner_id: property["owner_id"], ...property };
+  console.log(newProperty);
+  const q = `INSERT INTO properties (owner_id, title, description, number_of_bathrooms, number_of_bedrooms,  parking_spaces, cost_per_night, thumbnail_photo_url, cover_photo_url,
+   street, country, city, province, post_code)
+  VALUES (${Array.from({ length: 14 }, (_, i) => "$" + +(i + 1)).join(
+    ", "
+  )}) RETURNING *;`;
+
+  console.log(q);
+  const values = Object.values(newProperty);
+
+  return pool
+    .query(q, values)
+    .then((result) => {
+      console.log(result.rows);
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log(err);
+      return err.message;
+    });
 };
 exports.addProperty = addProperty;
